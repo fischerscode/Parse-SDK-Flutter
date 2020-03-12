@@ -98,6 +98,7 @@ class ParseLiveList<T extends ParseObject> {
         .client
         .subscribe(QueryBuilder<T>.copy(_query))
         .then((Subscription subscription) {
+      print("ParseLiveList: subscribed to LiveQuery");
       _liveQuerySubscription = subscription;
       subscription.on(LiveQueryEvent.create, _objectAdded);
       subscription.on(LiveQueryEvent.update, _objectUpdated);
@@ -157,6 +158,7 @@ class ParseLiveList<T extends ParseObject> {
   }
 
   void _objectAdded(T object, {bool loaded = true}) {
+    print('ParseLiveList: object Added $object');
     for (int i = 0; i < _list.length; i++) {
       if (after(object, _list[i].object) != true) {
         _list.insert(i, ParseLiveListElement<T>(object, loaded: loaded));
@@ -171,16 +173,22 @@ class ParseLiveList<T extends ParseObject> {
   }
 
   void _objectUpdated(T object) {
+    print('ParseLiveList: object Updated $object');
     for (int i = 0; i < _list.length; i++) {
       if (_list[i].object.get<String>(keyVarObjectId) ==
           object.get<String>(keyVarObjectId)) {
+        print('ParseLiveList: objectUpdated: position found');
         if (after(_list[i].object, object) == null) {
+          print('ParseLiveList: objectUpdated: position remained');
           _list[i].object = object;
         } else {
+          print('ParseLiveList: objectUpdated: position changed');
           _list.removeAt(i).dispose();
           _eventStreamController.sink.add(ParseLiveListDeleteEvent<T>(
               i, object?.clone(object?.toJson(full: true))));
+          print('ParseLiveList: objectUpdated: removed object');
           _objectAdded(object);
+          print('ParseLiveList: objectUpdated: readded object');
         }
         break;
       }
@@ -188,6 +196,7 @@ class ParseLiveList<T extends ParseObject> {
   }
 
   void _objectDeleted(T object) {
+    print('ParseLiveList: object Deleted $object');
     for (int i = 0; i < _list.length; i++) {
       if (_list[i].object.get<String>(keyVarObjectId) ==
           object.get<String>(keyVarObjectId)) {
@@ -373,10 +382,12 @@ class _ParseLiveListWidgetState<T extends ParseObject>
         _liveList = value;
         _liveList.stream.listen((ParseLiveListEvent<ParseObject> event) {
           if (event is ParseLiveListAddEvent) {
+            print('ParseLiveListWidget: new AddEvent ${event.object}');
             if (_animatedListKey.currentState != null)
               _animatedListKey.currentState
                   .insertItem(event.index, duration: widget.duration);
           } else if (event is ParseLiveListDeleteEvent) {
+            print('ParseLiveListWidget: new DeleteEvent ${event.object}');
             _animatedListKey.currentState.removeItem(
                 event.index,
                 (BuildContext context, Animation<double> animation) =>
@@ -475,6 +486,7 @@ class _ParseLiveListElementWidgetState<T extends ParseObject>
     if (stream != null) {
       _streamSubscription = stream().listen(
         (T data) {
+          print('ParseLiveListElementWidget: objectState received $data');
           if (widget != null) {
             setState(() {
               _snapshot = ParseLiveListElementSnapshot<T>(loadedData: data);
@@ -484,6 +496,7 @@ class _ParseLiveListElementWidgetState<T extends ParseObject>
           }
         },
         onError: (Object error) {
+          print('ParseLiveListElementWidget: on error: $error');
           if (error is ParseError) {
             if (widget != null) {
               setState(() {
@@ -512,6 +525,7 @@ class _ParseLiveListElementWidgetState<T extends ParseObject>
 
   @override
   Widget build(BuildContext context) {
+    print('ParseLiveListElementWidget: ${widget.key} build');
     final Widget result = SizeTransition(
       sizeFactor: widget.sizeFactor,
       child: AnimatedSize(
