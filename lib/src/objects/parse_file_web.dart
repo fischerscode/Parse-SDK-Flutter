@@ -23,8 +23,9 @@ class ParseWebFile extends ParseFileBase {
       return this;
     }
 
-    final Response response = await _client.get(url);
-    file = response.bodyBytes;
+    final Response<List<int>> response = await _client.get<List<int>>(url,
+        options: Options(responseType: ResponseType.bytes));
+    file = response.data;
 
     return this;
   }
@@ -39,7 +40,7 @@ class ParseWebFile extends ParseFileBase {
       };
       return handleResponse<ParseWebFile>(
           this,
-          Response(json.encode(response), 201),
+          Response<String>(data: json.encode(response), statusCode: 201),
           ParseApiRQ.upload,
           _debug,
           parseClassName);
@@ -52,10 +53,10 @@ class ParseWebFile extends ParseFileBase {
     };
     try {
       final String uri = _client.data.serverUrl + '$_path';
-      final Response response =
-          await _client.post(uri, headers: headers, body: file);
+      final Response<String> response = await _client.post<String>(uri,
+          options: Options(headers: headers), data: file);
       if (response.statusCode == 201) {
-        final Map<String, dynamic> map = json.decode(response.body);
+        final Map<String, dynamic> map = json.decode(response.data);
         url = map['url'].toString();
         name = map['name'].toString();
       }

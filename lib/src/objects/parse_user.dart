@@ -118,7 +118,8 @@ class ParseUser extends ParseObject implements ParseCloneable {
 
     try {
       final Uri url = getSanitisedUri(_client, '$keyEndPointUserName');
-      final Response response = await _client.get(url, headers: headers);
+      final Response<String> response = await _client
+          .get<String>(url.toString(), options: Options(headers: headers));
       return await _handleResponse(
           this, response, ParseApiRQ.currentUser, _debug, parseClassName);
     } on Exception catch (e) {
@@ -154,12 +155,14 @@ class ParseUser extends ParseObject implements ParseCloneable {
       final String body = json.encode(bodyData);
       _saveChanges();
       final String installationId = await _getInstallationId();
-      final Response response = await _client.post(url,
-          headers: <String, String>{
-            keyHeaderRevocableSession: '1',
-            if (installationId != null) keyHeaderInstallationId: installationId,
-          },
-          body: body);
+      final Response<String> response =
+          await _client.post<String>(url.toString(),
+              options: Options(headers: <String, String>{
+                keyHeaderRevocableSession: '1',
+                if (installationId != null)
+                  keyHeaderInstallationId: installationId,
+              }),
+              data: body);
 
       return await _handleResponse(
           this, response, ParseApiRQ.signUp, _debug, parseClassName);
@@ -182,11 +185,13 @@ class ParseUser extends ParseObject implements ParseCloneable {
       final Uri url = getSanitisedUri(_client, '$keyEndPointLogin',
           queryParams: queryParams);
       _saveChanges();
-      final Response response =
-          await _client.get(url, headers: <String, String>{
-        keyHeaderRevocableSession: '1',
-        if (installationId != null) keyHeaderInstallationId: installationId,
-      });
+      final Response<String> response = await _client.get<String>(
+        url.toString(),
+        options: Options(headers: <String, String>{
+          keyHeaderRevocableSession: '1',
+          if (installationId != null) keyHeaderInstallationId: installationId,
+        }),
+      );
 
       return await _handleResponse(
           this, response, ParseApiRQ.login, _debug, parseClassName);
@@ -202,16 +207,18 @@ class ParseUser extends ParseObject implements ParseCloneable {
       final Uuid uuid = Uuid();
       final String installationId = await _getInstallationId();
 
-      final Response response = await _client.post(url,
-          headers: <String, String>{
-            keyHeaderRevocableSession: '1',
-            if (installationId != null) keyHeaderInstallationId: installationId,
-          },
-          body: jsonEncode(<String, dynamic>{
-            'authData': <String, dynamic>{
-              'anonymous': <String, dynamic>{'id': uuid.v4()}
-            }
-          }));
+      final Response<String> response =
+          await _client.post<String>(url.toString(),
+              options: Options(headers: <String, String>{
+                keyHeaderRevocableSession: '1',
+                if (installationId != null)
+                  keyHeaderInstallationId: installationId,
+              }),
+              data: jsonEncode(<String, dynamic>{
+                'authData': <String, dynamic>{
+                  'anonymous': <String, dynamic>{'id': uuid.v4()}
+                }
+              }));
 
       return await _handleResponse(
           this, response, ParseApiRQ.loginAnonymous, _debug, parseClassName);
@@ -233,14 +240,16 @@ class ParseUser extends ParseObject implements ParseCloneable {
     try {
       final Uri url = getSanitisedUri(_client, '$keyEndPointUsers');
       final String installationId = await _getInstallationId();
-      final Response response = await _client.post(url,
-          headers: <String, String>{
-            keyHeaderRevocableSession: '1',
-            if (installationId != null) keyHeaderInstallationId: installationId,
-          },
-          body: jsonEncode(<String, dynamic>{
-            'authData': <String, dynamic>{provider: authData}
-          }));
+      final Response<String> response =
+          await _client.post<String>(url.toString(),
+              options: Options(headers: <String, String>{
+                keyHeaderRevocableSession: '1',
+                if (installationId != null)
+                  keyHeaderInstallationId: installationId,
+              }),
+              data: jsonEncode(<String, dynamic>{
+                'authData': <String, dynamic>{provider: authData}
+              }));
 
       return await _handleResponse(
           this, response, ParseApiRQ.loginWith, _debug, parseClassName);
@@ -263,8 +272,10 @@ class ParseUser extends ParseObject implements ParseCloneable {
 
     try {
       final Uri url = getSanitisedUri(_client, '$keyEndPointLogout');
-      final Response response = await _client.post(url,
-          headers: <String, String>{keyHeaderSessionToken: sessionId});
+      final Response<String> response = await _client.post<String>(
+          url.toString(),
+          options: Options(
+              headers: <String, String>{keyHeaderSessionToken: sessionId}));
 
       return await _handleResponse(
           this, response, ParseApiRQ.logout, _debug, parseClassName);
@@ -287,9 +298,9 @@ class ParseUser extends ParseObject implements ParseCloneable {
   /// Sends a verification email to the users email address
   Future<ParseResponse> verificationEmailRequest() async {
     try {
-      final Response response = await _client.post(
+      final Response<String> response = await _client.post<String>(
           '${_client.data.serverUrl}$keyEndPointVerificationEmail',
-          body: json.encode(<String, dynamic>{keyVarEmail: emailAddress}));
+          data: json.encode(<String, dynamic>{keyVarEmail: emailAddress}));
       return await _handleResponse(this, response,
           ParseApiRQ.verificationEmailRequest, _debug, parseClassName);
     } on Exception catch (e) {
@@ -301,9 +312,9 @@ class ParseUser extends ParseObject implements ParseCloneable {
   /// Sends a password reset email to the users email address
   Future<ParseResponse> requestPasswordReset() async {
     try {
-      final Response response = await _client.post(
+      final Response<String> response = await _client.post<String>(
           '${_client.data.serverUrl}$keyEndPointRequestPasswordReset',
-          body: json.encode(<String, dynamic>{keyVarEmail: emailAddress}));
+          data: json.encode(<String, dynamic>{keyVarEmail: emailAddress}));
       return await _handleResponse(this, response,
           ParseApiRQ.requestPasswordReset, _debug, parseClassName);
     } on Exception catch (e) {
@@ -351,7 +362,8 @@ class ParseUser extends ParseObject implements ParseCloneable {
     if (objectId != null) {
       try {
         final Uri url = getSanitisedUri(_client, '$_path/$objectId');
-        final Response response = await _client.delete(url);
+        final Response<String> response =
+            await _client.delete<String>(url.toString());
         return await _handleResponse(
             this, response, ParseApiRQ.destroy, _debug, parseClassName);
       } on Exception catch (e) {
@@ -374,7 +386,8 @@ class ParseUser extends ParseObject implements ParseCloneable {
 
     try {
       final Uri url = getSanitisedUri(_client, '$path');
-      final Response response = await _client.get(url);
+      final Response<String> response =
+          await _client.get<String>(url.toString());
       final ParseResponse parseResponse = handleResponse<ParseUser>(
           emptyUser, response, ParseApiRQ.getAll, _debug, keyClassUser);
       return parseResponse;
@@ -402,12 +415,16 @@ class ParseUser extends ParseObject implements ParseCloneable {
   }
 
   /// Handles all the response data for this class
-  static Future<ParseResponse> _handleResponse(ParseUser user,
-      Response response, ParseApiRQ type, bool debug, String className) async {
+  static Future<ParseResponse> _handleResponse(
+      ParseUser user,
+      Response<String> response,
+      ParseApiRQ type,
+      bool debug,
+      String className) async {
     final ParseResponse parseResponse =
         handleResponse<ParseUser>(user, response, type, debug, className);
 
-    final Map<String, dynamic> responseData = jsonDecode(response.body);
+    final Map<String, dynamic> responseData = jsonDecode(response.data);
     if (responseData.containsKey(keyVarObjectId)) {
       user.sessionToken = responseData[keyParamSessionToken];
       ParseCoreData().setSessionId(user.sessionToken);

@@ -8,9 +8,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:devicelocale/devicelocale.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:http/http.dart';
-import 'package:http/io_client.dart';
 import 'package:meta/meta.dart';
 import 'package:package_info/package_info.dart';
 import 'package:path/path.dart' as path;
@@ -20,6 +19,8 @@ import 'package:sembast/sembast_io.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:xxtea/xxtea.dart';
+
+import 'src/network/http_client_adapter.dart';
 
 export 'src/network/parse_live_query.dart'
     if (dart.library.js) 'src/network/parse_live_query_web.dart';
@@ -141,8 +142,8 @@ class Parse {
     const ParseApiRQ type = ParseApiRQ.healthCheck;
 
     try {
-      final Response response =
-          await _client.get('${ParseCoreData().serverUrl}$keyEndPointHealth');
+      final Response<String> response = await _client
+          .get<String>('${ParseCoreData().serverUrl}$keyEndPointHealth');
       parseResponse =
           handleResponse<Parse>(null, response, type, _debug, className);
     } on Exception catch (e) {

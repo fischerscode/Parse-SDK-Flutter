@@ -15,19 +15,19 @@ void main() {
       await Parse().initialize('appId', 'https://test.parse.com', debug: true);
 
       final QueryBuilder<ParseObject> queryBuilder =
-      QueryBuilder<ParseObject>(ParseObject('_User', client: client));
+          QueryBuilder<ParseObject>(ParseObject('_User', client: client));
       queryBuilder.whereRelatedTo('likes', 'Post', '8TOXdXf3tz');
 
       when(client.data).thenReturn(ParseCoreData());
       await queryBuilder.query();
 
-      final Uri result = verify(client.get(captureAny)).captured.single;
+      final Uri result = verify(client.get<String>(captureAny)).captured.single;
 
       expect(result.path, '/classes/_User');
 
       final Uri expectedQuery = Uri(
           query:
-          'where={"\$relatedTo":{"object":{"__type":"Pointer","className":"Post","objectId":"8TOXdXf3tz"},"key":"likes"}}');
+              'where={"\$relatedTo":{"object":{"__type":"Pointer","className":"Post","objectId":"8TOXdXf3tz"},"key":"likes"}}');
       expect(result.query, expectedQuery.query);
     });
   });

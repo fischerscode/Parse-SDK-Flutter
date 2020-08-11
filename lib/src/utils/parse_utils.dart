@@ -65,8 +65,8 @@ String removeTrailingSlash(String serverUrl) {
   }
 }
 
-Future<ParseResponse> batchRequest(List<dynamic> requests,
-    List<ParseObject> objects,
+Future<ParseResponse> batchRequest(
+    List<dynamic> requests, List<ParseObject> objects,
     {ParseHTTPClient client, bool debug}) async {
   debug = isDebugEnabled(objectLevelDebug: debug);
   client = client ??
@@ -76,7 +76,8 @@ Future<ParseResponse> batchRequest(List<dynamic> requests,
   try {
     final Uri url = getSanitisedUri(client, '/batch');
     final String body = json.encode(<String, dynamic>{'requests': requests});
-    final Response result = await client.post(url, body: body);
+    final Response<String> result =
+        await client.post<String>(url.toString(), data: body);
 
     return handleResponse<ParseObject>(
         objects, result, ParseApiRQ.batch, debug, 'parse_utils');
