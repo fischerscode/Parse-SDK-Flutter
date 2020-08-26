@@ -4,20 +4,29 @@ abstract class ParseFileBase extends ParseObject {
   /// Creates a new file
   ///
   /// {https://docs.parseplatform.org/rest/guide/#files/}
-  ParseFileBase(
-      {@required String name,
-      String url,
-      bool debug,
-      ParseHTTPClient client,
-      bool autoSendSessionId})
-      : super(keyFileClassname,
+  ParseFileBase({
+    @required String name,
+    String url,
+    bool debug,
+    ParseHTTPClient client,
+    bool autoSendSessionId,
+    ParseHTTPDioClient dioClient,
+  }) : super(keyFileClassname,
             debug: debug,
             autoSendSessionId: autoSendSessionId,
             client: client) {
     _path = '/files/$name';
     this.name = name;
     this.url = url;
+
+    _dioClient = dioClient ??
+        ParseHTTPDioClient(
+            sendSessionId:
+                autoSendSessionId ?? ParseCoreData().autoSendSessionId,
+            securityContext: ParseCoreData().securityContext);
   }
+
+  ParseHTTPDioClient _dioClient;
 
   String get name => super.get<String>(keyVarName);
   set name(String name) => set<String>(keyVarName, name);
@@ -41,7 +50,7 @@ abstract class ParseFileBase extends ParseObject {
   }
 
   /// Uploads a file to Parse Server
-  Future<ParseResponse> upload();
+  Future<ParseResponse> upload({dio.ProgressCallback progressCallback});
 
   Future<ParseFileBase> download();
 }
