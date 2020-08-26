@@ -50,7 +50,8 @@ class ParseFile extends ParseFileBase {
     final Directory tempPath = await getTemporaryDirectory();
     file = File('${tempPath.path}/$name');
     await file.create();
-    final Response<List<int>> response = await _client.get<List<int>>(url, options: Options(responseType: ResponseType.bytes));
+    final Response<List<int>> response = await _client.get<List<int>>(url,
+        options: Options(responseType: ResponseType.bytes));
     await file.writeAsBytes(response.data);
 
     return this;
@@ -58,7 +59,7 @@ class ParseFile extends ParseFileBase {
 
   /// Uploads a file to Parse Server
   @override
-  Future<ParseResponse> upload() async {
+  Future<ParseResponse> upload({ProgressCallback progressCallback}) async {
     if (saved) {
       //Creates a Fake Response to return the correct result
       final Map<String, String> response = <String, String>{
@@ -80,8 +81,12 @@ class ParseFile extends ParseFileBase {
     try {
       final String uri = _client.data.serverUrl + '$_path';
       final List<int> body = await file.readAsBytes();
-      final Response<String> response = await _client.post<String>(uri,
-          options: Options(headers: headers), data: body);
+      final Response<String> response = await _client.post<String>(
+        uri,
+        options: Options(headers: headers),
+        data: body,
+        onSendProgress: progressCallback,
+      );
       if (response.statusCode == 201) {
         final Map<String, dynamic> map = json.decode(response.data);
         url = map['url'].toString();

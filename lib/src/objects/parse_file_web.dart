@@ -31,7 +31,7 @@ class ParseWebFile extends ParseFileBase {
   }
 
   @override
-  Future<ParseResponse> upload() async {
+  Future<ParseResponse> upload({ProgressCallback progressCallback}) async {
     if (saved) {
       //Creates a Fake Response to return the correct result
       final Map<String, String> response = <String, String>{
@@ -53,8 +53,12 @@ class ParseWebFile extends ParseFileBase {
     };
     try {
       final String uri = _client.data.serverUrl + '$_path';
-      final Response<String> response = await _client.post<String>(uri,
-          options: Options(headers: headers), data: file);
+      final Response<String> response = await _client.post<String>(
+        uri,
+        options: Options(headers: headers),
+        data: file,
+        onSendProgress: progressCallback,
+      );
       if (response.statusCode == 201) {
         final Map<String, dynamic> map = json.decode(response.data);
         url = map['url'].toString();
