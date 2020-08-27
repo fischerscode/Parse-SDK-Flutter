@@ -521,10 +521,12 @@ class ParseObject extends ParseBase implements ParseCloneable {
   }
 
   /// Can be used to create custom queries
-  Future<ParseResponse> query<T extends ParseObject>(String query) async {
+  Future<ParseResponse> query<T extends ParseObject>(String query,
+      {ProgressCallback progressCallback}) async {
     try {
       final Uri url = getSanitisedUri(_client, '$_path', query: query);
-      final Response<String> result = await _client.get<String>(url.toString());
+      final Response<String> result = await _client.get<String>(url.toString(),
+          onReceiveProgress: progressCallback,);
       return handleResponse<T>(
           this, result, ParseApiRQ.query, _debug, parseClassName);
     } on Exception catch (e) {
