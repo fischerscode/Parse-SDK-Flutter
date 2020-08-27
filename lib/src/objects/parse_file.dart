@@ -42,7 +42,7 @@ class ParseFile extends ParseFileBase {
   }
 
   @override
-  Future<ParseFile> download() async {
+  Future<ParseFile> download({ProgressCallback progressCallback}) async {
     if (url == null) {
       return this;
     }
@@ -50,8 +50,11 @@ class ParseFile extends ParseFileBase {
     final Directory tempPath = await getTemporaryDirectory();
     file = File('${tempPath.path}/$name');
     await file.create();
-    final Response<List<int>> response = await _client.get<List<int>>(url,
-        options: Options(responseType: ResponseType.bytes));
+    final Response<List<int>> response = await _client.get<List<int>>(
+      url,
+      options: Options(responseType: ResponseType.bytes),
+      onReceiveProgress: progressCallback,
+    );
     await file.writeAsBytes(response.data);
 
     return this;

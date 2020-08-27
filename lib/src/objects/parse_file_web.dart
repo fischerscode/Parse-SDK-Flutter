@@ -18,13 +18,16 @@ class ParseWebFile extends ParseFileBase {
   Uint8List file;
 
   @override
-  Future<ParseWebFile> download() async {
+  Future<ParseWebFile> download({ProgressCallback progressCallback}) async {
     if (url == null) {
       return this;
     }
 
-    final Response<List<int>> response = await _client.get<List<int>>(url,
-        options: Options(responseType: ResponseType.bytes));
+    final Response<List<int>> response = await _client.get<List<int>>(
+      url,
+      options: Options(responseType: ResponseType.bytes),
+      onReceiveProgress: progressCallback,
+    );
     file = response.data;
 
     return this;
