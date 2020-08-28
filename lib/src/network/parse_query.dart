@@ -5,6 +5,33 @@ class QueryBuilder<T extends ParseObject> {
   /// Class to create complex queries
   QueryBuilder(this.object) : super();
 
+  QueryBuilder.name(String classname)
+      : this(ParseCoreData.instance.createObject(classname));
+
+  QueryBuilder.or(this.object, List<QueryBuilder<T>> list) {
+    if (list != null) {
+      String query = '"\$or":[';
+      for (int i = 0; i < list.length; ++i) {
+        if (i > 0) {
+          query += ',';
+        }
+        query += '{' + list[i].buildQueries(list[i].queries) + '}';
+      }
+      query += ']';
+      queries.add(MapEntry<String, dynamic>(_NO_OPERATOR_NEEDED, query));
+    }
+  }
+
+  QueryBuilder.copy(QueryBuilder<T> query) {
+    object = query.object;
+    queries = query.queries
+        .map((MapEntry<String, dynamic> entry) =>
+            MapEntry<String, dynamic>(entry.key, entry.value.toString()))
+        .toList();
+    query.limiters.forEach((String key, dynamic value) =>
+        limiters.putIfAbsent(key, () => value.toString()));
+  }
+
   static const String _NO_OPERATOR_NEEDED = 'NO_OP';
   static const String _SINGLE_QUERY = 'SINGLE_QUERY';
 
@@ -271,16 +298,59 @@ class QueryBuilder<T extends ParseObject> {
         _SINGLE_QUERY, '\"$column\":{\"\$notInQuery\":$inQuery}'));
   }
 
+  // Add a constraint to the query that requires a particular key's value matches a value for a key in the results of another ParseQuery.
+  // ignore: always_specify_types
+  void whereMatchesKeyInQuery(
+      String column, String keyInQuery, QueryBuilder<T> query) {
+    if (query.queries.isEmpty) {
+      throw ArgumentError('query conditions is required');
+    }
+    if (limiters.containsKey('order')) {
+      throw ArgumentError('order is not allowed');
+    }
+    if (limiters.containsKey('include')) {
+      throw ArgumentError('include is not allowed');
+    }
+
+    final String inQuery =
+        query._buildQueryRelationalKey(query.object.parseClassName, keyInQuery);
+
+    queries.add(MapEntry<String, dynamic>(
+        _SINGLE_QUERY, '\"$column\":{\"\$select\":$inQuery}'));
+  }
+
+  // Add a constraint to the query that requires a particular key's value does not match any value for a key in the results of another ParseQuery
+  // ignore: always_specify_types
+  void whereDoesNotMatchKeyInQuery(
+      String column, String keyInQuery, QueryBuilder<T> query) {
+    if (query.queries.isEmpty) {
+      throw ArgumentError('query conditions is required');
+    }
+    if (limiters.containsKey('order')) {
+      throw ArgumentError('order is not allowed');
+    }
+    if (limiters.containsKey('include')) {
+      throw ArgumentError('include is not allowed');
+    }
+
+    final String inQuery =
+        query._buildQueryRelationalKey(query.object.parseClassName, keyInQuery);
+
+    queries.add(MapEntry<String, dynamic>(
+        _SINGLE_QUERY, '\"$column\":{\"\$dontSelect\":$inQuery}'));
+  }
+
   /// Finishes the query and calls the server
   ///
   /// Make sure to call this after defining your queries
-  Future<ParseResponse> query() async {
-    return object.query(buildQuery());
+  Future<ParseResponse> query<T extends ParseObject>() async {
+    return object.query<T>(buildQuery());
   }
 
-  Future<ParseResponse> distinct(String className) async {
+  Future<ParseResponse> distinct<T extends ParseObject>(
+      String className) async {
     final String queryString = 'distinct=$className';
-    return object.distinct(queryString);
+    return object.distinct<T>(queryString);
   }
 
   ///Counts the number of objects that match this query
@@ -298,6 +368,12 @@ class QueryBuilder<T extends ParseObject> {
   String _buildQueryRelational(String className) {
     queries = _checkForMultipleColumnInstances(queries);
     return '{\"where\":{${buildQueries(queries)}},\"className\":\"$className\"${getLimitersRelational(limiters)}}';
+  }
+
+  /// Builds the query relational with Key for Parse
+  String _buildQueryRelationalKey(String className, String keyInQuery) {
+    queries = _checkForMultipleColumnInstances(queries);
+    return '{\"query\":{\"className\":\"$className\",\"where\":{${buildQueries(queries)}}},\"key\":\"$keyInQuery\"}';
   }
 
   /// Builds the query for Parse

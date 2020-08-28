@@ -36,7 +36,7 @@ dynamic parseEncode(dynamic value, {bool full}) {
     return value;
   }
 
-  if (value is ParseFile) {
+  if (value is ParseFileBase) {
     return value;
   }
 
@@ -50,6 +50,10 @@ dynamic parseEncode(dynamic value, {bool full}) {
     } else {
       return value.toPointer();
     }
+  }
+
+  if (value is ParseACL) {
+    return value.toJson();
   }
 
   return value;

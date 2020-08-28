@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
             title: const Text('Parse Server demo'),
             actions: <Widget>[
               FlatButton(
-                  child: Text('Logout',
+                  child: const Text('Logout',
                       style: TextStyle(fontSize: 17.0, color: Colors.white)),
                   onPressed: () async {
                     final ParseUser user = await ParseUser.currentUser();
@@ -74,8 +74,8 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.data.success) {
               if (snapshot.data.results == null ||
                   snapshot.data.results.isEmpty) {
-                return Center(
-                  child: const Text('No Data'),
+                return const Center(
+                  child: Text('No Data'),
                 );
               }
             }
@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                     child: ListTile(
                       title: Text(
                         name,
-                        style: TextStyle(fontSize: 20.0),
+                        style: const TextStyle(fontSize: 20.0),
                       ),
                       subtitle: Text(description),
                       trailing: IconButton(
@@ -118,8 +118,8 @@ class _HomePageState extends State<HomePage> {
                   );
                 });
           } else {
-            return Center(
-              child: const Text('No Data'),
+            return const Center(
+              child: Text('No Data'),
             );
           }
         });

@@ -1,6 +1,6 @@
 part of flutter_parse_sdk;
 
-class ParseFile extends ParseObject {
+class ParseFile extends ParseFileBase {
   /// Creates a new file
   ///
   /// {https://docs.parseplatform.org/rest/guide/#files/}
@@ -9,40 +9,16 @@ class ParseFile extends ParseObject {
       String url,
       bool debug,
       ParseHTTPClient client,
-        bool autoSendSessionId})
-      : super('ParseFile', debug: debug, autoSendSessionId: autoSendSessionId) {
-    _debug = isDebugEnabled(objectLevelDebug: debug);
-    _client = client ??
-        ParseHTTPClient(
-            sendSessionId:
-                autoSendSessionId ?? ParseCoreData().autoSendSessionId,
-            securityContext: ParseCoreData().securityContext);
-
-    if (file != null) {
-      name = path.basename(file.path);
-      _path = '/files/$name';
-    } else {
-      name = name;
-      url = url;
-    }
-  }
+      bool autoSendSessionId})
+      : super(
+          name: file != null ? path.basename(file.path) : name,
+          url: url,
+          debug: debug,
+          client: client,
+          autoSendSessionId: autoSendSessionId,
+        );
 
   File file;
-
-  String get name => super.get<String>(keyVarName);
-  set name(String name) => set<String>(keyVarName, name);
-
-  String get url => super.get<String>(keyVarURL);
-  set url(String url) => set<String>(keyVarURL, url);
-
-  bool get saved => url != null;
-
-  @override
-  Map<String, dynamic> toJson({bool full = false, bool forApiRQ = false}) =>
-      <String, String>{'__type': keyFile, 'name': name, 'url': url};
-
-  @override
-  String toString() => json.encode(toJson(full: true));
 
   Future<ParseFile> loadStorage() async {
     final Directory tempPath = await getTemporaryDirectory();
@@ -65,6 +41,7 @@ class ParseFile extends ParseObject {
     return this;
   }
 
+  @override
   Future<ParseFile> download() async {
     if (url == null) {
       return this;
@@ -81,11 +58,6 @@ class ParseFile extends ParseObject {
 
   /// Uploads a file to Parse Server
   @override
-  Future<ParseResponse> save() async {
-    return upload();
-  }
-
-  /// Uploads a file to Parse Server
   Future<ParseResponse> upload() async {
     if (saved) {
       //Creates a Fake Response to return the correct result
