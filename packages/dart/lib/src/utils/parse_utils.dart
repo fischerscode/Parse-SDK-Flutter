@@ -77,11 +77,15 @@ Future<ParseResponse> batchRequest(
     final Uri url = getSanitisedUri(client, '/batch');
     final String body = json.encode(<String, dynamic>{'requests': requests});
     final Response<String> result =
-      await client.post<String>(url.toString(), data: body);
+        await client.post<String>(url.toString(), data: body);
 
     return handleResponse<ParseObject>(
         objects, result, ParseApiRQ.batch, debug, 'parse_utils');
   } on Exception catch (e) {
     return handleException(e, ParseApiRQ.batch, debug, 'parse_utils');
   }
+}
+
+Stream<T> _createStreamError<T>(Object error) async* {
+  throw error;
 }
