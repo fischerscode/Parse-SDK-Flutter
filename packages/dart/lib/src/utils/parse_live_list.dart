@@ -9,20 +9,23 @@ class ParseLiveList<T extends ParseObject> {
   }
 
   static Future<ParseLiveList<T>> create<T extends ParseObject>(
-      QueryBuilder<T> _query,
-      {bool listenOnAllSubItems,
-      List<String> listeningIncludes,
-      bool lazyLoading = true, List<String> preloadedColumns,}) {
+    QueryBuilder<T> _query, {
+    bool listenOnAllSubItems,
+    List<String> listeningIncludes,
+    bool lazyLoading = true,
+    List<String> preloadedColumns,
+  }) {
     final ParseLiveList<T> parseLiveList = ParseLiveList<T>._(
-        _query,
-        listenOnAllSubItems == true
-            ? _toIncludeMap(
-                _query.limiters['include']?.toString()?.split(',') ??
-                    <String>[])
-            : _toIncludeMap(listeningIncludes ?? <String>[]),
-        lazyLoading,preloadedColumns: preloadedColumns,);
+      _query,
+      listenOnAllSubItems == true
+          ? _toIncludeMap(
+              _query.limiters['include']?.toString()?.split(',') ?? <String>[])
+          : _toIncludeMap(listeningIncludes ?? <String>[]),
+      lazyLoading,
+      preloadedColumns: preloadedColumns,
+    );
 
-                        return parseLiveList._init().then((_) {
+    return parseLiveList._init().then((_) {
       return parseLiveList;
     });
   }
