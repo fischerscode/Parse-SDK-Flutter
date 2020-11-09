@@ -153,11 +153,16 @@ class ParseUser extends ParseObject implements ParseCloneable {
   /// that user on Parse
   /// By setting [allowWithoutEmail] to `true`, you can sign up without setting an email
   Future<ParseResponse> signUp({bool allowWithoutEmail = false}) async {
+
+    print('ParseSDK: signUp started');
+
     forgetLocalSession();
 
     try {
       if (emailAddress == null) {
+        print('ParseSDK: [signUp] email != null');
         if (!allowWithoutEmail) {
+          print('ParseSDK: [signUp] allowWithoutEmail == false => return null');
           return null;
         } else {
           assert(() {
@@ -168,9 +173,12 @@ class ParseUser extends ParseObject implements ParseCloneable {
       }
 
       final Uri url = getSanitisedUri(_client, '$path');
+      print('ParseSDK: [signUp] url = $url');
       final String body = json.encode(toJson(forApiRQ: true));
+      print('ParseSDK: [signUp] body = $body');
       _saveChanges();
       final String installationId = await _getInstallationId();
+      print('ParseSDK: [signUp] installationId = $installationId');
       final Response<String> response =
           await _client.post<String>(url.toString(),
               options: Options(headers: <String, String>{
@@ -180,9 +188,12 @@ class ParseUser extends ParseObject implements ParseCloneable {
               }),
               data: body);
 
+      print('ParseSDK: [signUp] response: $response');
+
       return await _handleResponse(
           this, response, ParseApiRQ.signUp, _debug, parseClassName);
     } on Exception catch (e) {
+      print('ParseSDK: [signUp] caught: $e');
       return handleException(e, ParseApiRQ.signUp, _debug, parseClassName);
     }
   }
@@ -305,8 +316,10 @@ class ParseUser extends ParseObject implements ParseCloneable {
   }
 
   void forgetLocalSession() {
+    print('ParseSDK: forgetLocalSession started');
     _client.data.sessionId = null;
     ParseCoreData().setSessionId(null);
+    print('ParseSDK: forgetLocalSession finished');
   }
 
   /// Delete the local user data.
