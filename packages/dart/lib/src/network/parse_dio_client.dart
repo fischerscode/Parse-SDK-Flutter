@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart' as dio;
 import 'package:parse_server_sdk/parse_server_sdk.dart';
 
-import 'dio_adapter_io.dart'
-  if (dart.library.js) 'dio_adapter_js.dart';
+import 'dio_adapter_io.dart' if (dart.library.js) 'dio_adapter_js.dart';
 
 class ParseDioClient extends ParseClient {
   _ParseDioClient _client;
@@ -82,7 +81,8 @@ class ParseDioClient extends ParseClient {
         data: data,
         options: _Options(headers: options?.headers),
       );
-      return ParseNetworkResponse(data: dioResponse.data);
+      return ParseNetworkResponse(
+          data: dioResponse.data, statusCode: dioResponse.statusCode);
     } on dio.DioError catch (error) {
       return ParseNetworkResponse(
           data: error.response?.data, statusCode: error.response?.statusCode);

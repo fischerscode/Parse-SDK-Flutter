@@ -162,14 +162,10 @@ class ParseInstallation extends ParseObject {
     try {
       final String uri =
           '${ParseCoreData().serverUrl}$keyEndPointInstallations';
-      final Map<String, dynamic> bodyData = toJson(
+      final String body = json.encode(toJson(
         forApiRQ: true,
         allowCustomObjectId: allowCustomObjectId,
-      );
-
-      bodyData[keyVarInstallationId] = installationId;
-
-      final String body = json.encode(bodyData);
+      ));
       final Map<String, String> headers = <String, String>{
         keyHeaderContentType: keyHeaderContentTypeJson
       };
