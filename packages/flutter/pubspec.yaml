@@ -18,7 +18,7 @@ dependencies:
 
   # Networking
   dio: ^3.0.10
-  connectivity: ^0.4.9+2 # only used in the flutter part
+  connectivity: ^2.0.2 # only used in the flutter part
 
   #Database
   shared_preferences: ^0.5.10 # only used in the flutter part
