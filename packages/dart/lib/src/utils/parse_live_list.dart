@@ -619,7 +619,8 @@ class ParseLiveListElement<T extends ParseObject> {
 
       tasks.add(_liveQuery.client
           .subscribe(queryBuilder)
-          .then((Subscription<ParseObject> subscription) {
+          .then((Subscription<ParseObject> subscription) async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
         currentKey.subscription = subscription;
         subscription.on(LiveQueryEvent.update, (ParseObject newObject) async {
           _subscriptionQueue.whenComplete(() async {
